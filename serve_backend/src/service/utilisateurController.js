@@ -1,5 +1,6 @@
 const { User } = require('../models');
 
+// Récupérer la liste de tous les utilisateurs
 async function getAllUtilisateurs(req, res) {
     try {
         const utilisateurs = await User.findAll();
@@ -20,6 +21,7 @@ async function getAllUtilisateurs(req, res) {
     }
 }
 
+// Récupérer un utilisateur spécifique par ID
 async function getUtilisateurById(req, res) {
     try {
         const { id } = req.params;
@@ -43,7 +45,9 @@ async function getUtilisateurById(req, res) {
     }
 }
 
+// Créer un nouvel utilisateur avec validation
 async function createUtilisateur(req, res) {
+    const transaction = await sequelize.transaction();
     try {
         const { nom, email, telephone } = req.body;
         
@@ -51,13 +55,14 @@ async function createUtilisateur(req, res) {
             nom,
             email,
             telephone
-        });
-        
+        }, { transaction });
+        await transaction.commit();
         res.status(201).json({
             message: "utilisateur créé avec succès",
             data: nouvelUtilisateur
         });
     } catch (error) {
+        await transaction.rollback();
         res.status(500).json({
             message: "erreur lors de la création de l'utilisateur",
             error: error.message
@@ -65,6 +70,7 @@ async function createUtilisateur(req, res) {
     }
 }
 
+// Mettre à jour les données d'un utilisateur
 async function updateUtilisateur(req, res) {
     try {
         const { id } = req.params;
@@ -78,6 +84,7 @@ async function updateUtilisateur(req, res) {
             });
         }
         
+        // Mettre à jour seulement les champs fournis
         await utilisateur.update({
             nom: nom || utilisateur.nom,
             email: email || utilisateur.email,
@@ -96,6 +103,7 @@ async function updateUtilisateur(req, res) {
     }
 }
 
+// Supprimer un utilisateur
 async function deleteUtilisateur(req, res) {
     try {
         const { id } = req.params;
