@@ -1,0 +1,36 @@
+const { DataTypes } = require('sequelize');
+
+// Modèle UserRole table d'association many-to-many entre utilisateurs et rôles
+module.exports = (sequelize) => {
+    const UserRole = sequelize.define('UserRole', {
+        user_id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            references: {
+                model: 'users',
+                key: 'id'
+            }
+        },
+        role_id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            references: {
+                model: 'roles',
+                key: 'id'
+            }
+        },
+        assigned_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW
+        }
+    }, {
+        tableName: 'user_roles',
+        timestamps: false
+    });
+
+    UserRole.associate = (models) => {
+    };
+
+    return UserRole;
+};

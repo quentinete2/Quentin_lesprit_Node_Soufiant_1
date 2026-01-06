@@ -1,0 +1,47 @@
+services:
+  # NodeJS Service
+  serve_backend:
+    container_name: "backend-projet-quentin"
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: 'npm run dev'
+    depends_on:
+       - 'serve_backend-db'
+       - 'serve_backend-mailhog'
+    links:
+       - 'serve_backend-db:db'
+       - 'serve_backend-mailhog:mailhog'
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - './serve_backend:/home/app:rw'
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+    expose:
+      - "3000"
+    working_dir: '/home/app'
+  serve_backend-mailhog:
+    image: mailhog/mailhog
+    ports: 
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui
+  # database
+  serve_backend-db:
+    image: mariadb:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: jn4949
+      MARIADB_DATABASE: listra
+    volumes:
+      - './db-data:/var/lib/mysql:rw'
+  # Database client
+  serve_backend-adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
