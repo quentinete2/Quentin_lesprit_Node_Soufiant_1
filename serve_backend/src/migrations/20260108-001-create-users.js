@@ -19,18 +19,13 @@ module.exports = {
         allowNull: false,
         unique: true
       },
-      password_hash: {
+      password: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      post_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'posts',
-          key: 'id'
-        },
-        onDelete: 'SET NULL'
+      token: {
+        type: Sequelize.TEXT,
+        allowNull: true
       },
       created_at: {
         type: Sequelize.DATE,

@@ -1,27 +1,21 @@
 const express = require('express');
 const router = express.Router();
 
-// Importer les fonctions du contrôleur rôles
+// Importer les middlewares
+const { validateAuthentication } = require('../midwave/auth');
 const {
     getAllRoles,
     getRoleById,
     createRole,
     updateRole,
-    deleteRole,
-    getRolePermissions,
-    assignPermissionToRole,
-    removePermissionFromRole
+    deleteRole
 } = require('../service/roleController');
 
-// Routes CRUD pour les rôles
-router.get('/', getAllRoles);
-router.get('/:id', getRoleById);
-router.post('/', createRole);
-router.put('/:id', updateRole);
-router.delete('/:id', deleteRole);
-
-// Routes pour gérer les permissions d'un rôle
-router.get('/:id/permissions', getRolePermissions);
-router.delete('/:roleId/permissions/:permissionId', removePermissionFromRole);
+// Routes des rôles
+router.get('/', validateAuthentication, getAllRoles);
+router.get('/:id', validateAuthentication, getRoleById);
+router.post('/', validateAuthentication, createRole);
+router.put('/:id', validateAuthentication, updateRole);
+router.delete('/:id', validateAuthentication, deleteRole);
 
 module.exports = router;

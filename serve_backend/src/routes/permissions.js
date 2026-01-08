@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-// Importer les fonctions du contrôleur permissions
+// Importer les middlewares
+const { validateAuthentication } = require('../midwave/auth');
 const {
     getAllPermissions,
     getPermissionById,
@@ -10,11 +11,11 @@ const {
     deletePermission
 } = require('../service/permissionController');
 
-// Routes CRUD pour les permissions
-router.get('/', getAllPermissions);
-router.get('/:id', getPermissionById);
-router.post('/', createPermission);
-router.put('/:id', updatePermission);
-router.delete('/:id', deletePermission);
+// Routes des permissions
+router.get('/', validateAuthentication, getAllPermissions);
+router.get('/:id', validateAuthentication, getPermissionById);
+router.post('/', validateAuthentication, createPermission);
+router.put('/:id', validateAuthentication, updatePermission);
+router.delete('/:id', validateAuthentication, deletePermission);
 
 module.exports = router;

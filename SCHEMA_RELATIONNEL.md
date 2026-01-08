@@ -3,33 +3,43 @@
 ## Diagramme DBDiagram.io
 
 ```dbml
+Enum post_status {
+  draft
+  published
+  archived
+}
+
 Table users {
   id int [pk, increment]
   username varchar [not null, unique]
   email varchar [not null, unique]
-  password_hash varchar [not null]
-  post_id int [ref: > posts.id]
-  created_at datetime [not null]
+  password varchar [not null]
+  token text
+  created_at datetime [default: `now()`, not null]
   updated_at datetime
 }
 
 Table profiles {
   id int [pk, increment]
-  user_id int [ref: > users.id, unique]
+  user_id int [ref: - users.id, unique]
   first_name varchar
   last_name varchar
   birthdate date
   phone varchar
   address varchar
-  created_at datetime [not null]
+  bio text
+  created_at datetime [default: `now()`, not null]
   updated_at datetime
 }
 
 Table posts {
   id int [pk, increment]
-  title varchar [not null, unique]
-  description varchar
-  created_at datetime [not null]
+  user_id int [ref: > users.id]
+  title varchar [not null]
+  slug varchar [unique]
+  content text
+  status post_status [default: 'draft']
+  created_at datetime [default: `now()`, not null]
   updated_at datetime
 }
 
@@ -38,7 +48,7 @@ Table post_comments {
   post_id int [ref: > posts.id]
   user_id int [ref: > users.id]
   content text [not null]
-  created_at datetime [not null]
+  created_at datetime [default: `now()`, not null]
   updated_at datetime
 }
 
@@ -46,18 +56,23 @@ Table roles {
   id int [pk, increment]
   name varchar [not null, unique]
   description varchar
+  created_at datetime [default: `now()`, not null]
+  updated_at datetime
 }
 
 Table permissions {
   id int [pk, increment]
   name varchar [not null, unique]
   description varchar
+  created_at datetime [default: `now()`, not null]
+  updated_at datetime
 }
 
 Table user_roles {
   user_id int [ref: > users.id]
   role_id int [ref: > roles.id]
-  assigned_at datetime [not null]
+  assigned_at datetime [default: `now()`, not null]
+  
   indexes {
     (user_id, role_id) [pk]
   }
@@ -66,6 +81,7 @@ Table user_roles {
 Table role_permissions {
   role_id int [ref: > roles.id]
   permission_id int [ref: > permissions.id]
+  
   indexes {
     (role_id, permission_id) [pk]
   }
@@ -83,14 +99,13 @@ Table role_permissions {
 | `id` | INTEGER | PK, AUTO_INCREMENT | Identifiant unique de l'utilisateur |
 | `username` | VARCHAR(255) | NOT NULL, UNIQUE | Nom d'utilisateur unique |
 | `email` | VARCHAR(255) | NOT NULL, UNIQUE | Email unique de l'utilisateur |
-| `password_hash` | VARCHAR(255) | NOT NULL | Hash du mot de passe |
-| `post_id` | INTEGER | FK → posts(id) | Référence au post associé |
-| `created_at` | DATETIME | NOT NULL | Date de création du compte |
+| `password` | VARCHAR(255) | NOT NULL | Hash du mot de passe |
+| `token` | TEXT | NULL | Token d'authentification JWT |
+| `created_at` | DATETIME | NOT NULL, DEFAULT: NOW() | Date de création du compte |
 | `updated_at` | DATETIME | NULL | Date de dernière modification |
 
 **Clés Primaires:** `id`  
-**Contraintes Uniques:** `username`, `email`  
-**Clés Étrangères:** `post_id` → `posts(id)`
+**Contraintes Uniques:** `username`, `email`
 
 ---
 
@@ -105,11 +120,12 @@ Table role_permissions {
 | `birthdate` | DATE | NULL | Date de naissance |
 | `phone` | VARCHAR(50) | NULL | Numéro de téléphone |
 | `address` | VARCHAR(255) | NULL | Adresse |
-| `created_at` | DATETIME | NOT NULL | Date de création du profil |
+| `bio` | TEXT | NULL | Biographie de l'utilisateur |
+| `created_at` | DATETIME | NOT NULL, DEFAULT: NOW() | Date de création du profil |
 | `updated_at` | DATETIME | NULL | Date de dernière modification |
 
 **Clés Primaires:** `id`  
-**Clés Étrangères:** `user_id` → `users(id)` (CASCADE)
+**Clés Étrangères:** `user_id` → `users(id)` (UNIQUE, ONE-TO-ONE)
 
 ---
 
@@ -118,13 +134,17 @@ Table role_permissions {
 | Colonne | Type | Contraintes | Description |
 |---------|------|-------------|-------------|
 | `id` | INTEGER | PK, AUTO_INCREMENT | Identifiant unique du post |
-| `title` | VARCHAR(255) | NOT NULL, UNIQUE | Titre du post |
-| `description` | TEXT | NULL | Description du post |
-| `created_at` | DATETIME | NOT NULL | Date de création du post |
+| `user_id` | INTEGER | FK → users(id) | Référence à l'auteur du post |
+| `title` | VARCHAR(255) | NOT NULL | Titre du post |
+| `slug` | VARCHAR(255) | UNIQUE | Slug pour l'URL |
+| `content` | TEXT | NULL | Contenu du post |
+| `status` | ENUM('draft', 'published', 'archived') | DEFAULT: 'draft' | Statut du post |
+| `created_at` | DATETIME | NOT NULL, DEFAULT: NOW() | Date de création du post |
 | `updated_at` | DATETIME | NULL | Date de dernière modification |
 
 **Clés Primaires:** `id`  
-**Contraintes Uniques:** `title`
+**Clés Étrangères:** `user_id` → `users(id)` (ONE-TO-MANY)  
+**Contraintes Uniques:** `slug`
 
 ---
 
@@ -134,9 +154,9 @@ Table role_permissions {
 |---------|------|-------------|-------------|
 | `id` | INTEGER | PK, AUTO_INCREMENT | Identifiant unique du commentaire |
 | `post_id` | INTEGER | FK → posts(id), NOT NULL | Référence au post |
-| `user_id` | INTEGER | FK → users(id), NOT NULL | Référence à l'utilisateur |
+| `user_id` | INTEGER | FK → users(id), NOT NULL | Référence à l'auteur du commentaire |
 | `content` | TEXT | NOT NULL | Contenu du commentaire |
-| `created_at` | DATETIME | NOT NULL | Date de création du commentaire |
+| `created_at` | DATETIME | NOT NULL, DEFAULT: NOW() | Date de création du commentaire |
 | `updated_at` | DATETIME | NULL | Date de dernière modification |
 
 **Clés Primaires:** `id`  
@@ -150,7 +170,9 @@ Table role_permissions {
 |---------|------|-------------|-------------|
 | `id` | INTEGER | PK, AUTO_INCREMENT | Identifiant unique du rôle |
 | `name` | VARCHAR(255) | NOT NULL, UNIQUE | Nom du rôle |
-| `description` | TEXT | NULL | Description du rôle |
+| `description` | VARCHAR(255) | NULL | Description du rôle |
+| `created_at` | DATETIME | NOT NULL, DEFAULT: NOW() | Date de création du rôle |
+| `updated_at` | DATETIME | NULL | Date de dernière modification |
 
 **Clés Primaires:** `id`  
 **Contraintes Uniques:** `name`
@@ -163,7 +185,9 @@ Table role_permissions {
 |---------|------|-------------|-------------|
 | `id` | INTEGER | PK, AUTO_INCREMENT | Identifiant unique de la permission |
 | `name` | VARCHAR(255) | NOT NULL, UNIQUE | Nom de la permission |
-| `description` | TEXT | NULL | Description de la permission |
+| `description` | VARCHAR(255) | NULL | Description de la permission |
+| `created_at` | DATETIME | NOT NULL, DEFAULT: NOW() | Date de création de la permission |
+| `updated_at` | DATETIME | NULL | Date de dernière modification |
 
 **Clés Primaires:** `id`  
 **Contraintes Uniques:** `name`
@@ -174,9 +198,12 @@ Table role_permissions {
 
 | Colonne | Type | Contraintes | Description |
 |---------|------|-------------|-------------|
-| `user_id` | INTEGER | PK, FK → users(id), NOT NULL | Référence à l'utilisateur |
-| `role_id` | INTEGER | PK, FK → roles(id), NOT NULL | Référence au rôle |
-| `assigned_at` | DATETIME | NOT NULL | Date d'assignation du rôle |
+| `user_id` | INTEGER | PK, FK → users(id) | Référence à l'utilisateur |
+| `role_id` | INTEGER | PK, FK → roles(id) | Référence au rôle |
+| `assigned_at` | DATETIME | NOT NULL, DEFAULT: NOW() | Date d'assignation du rôle |
+
+**Clés Primaires Composées:** (user_id, role_id)  
+**Clés Étrangères:** `user_id` → `users(id)` (CASCADE), `role_id` → `roles(id)` (CASCADE)
 
 **Clés Primaires:** `(user_id, role_id)`  
 **Clés Étrangères:** `user_id` → `users(id)` (CASCADE), `role_id` → `roles(id)` (CASCADE)
@@ -229,7 +256,7 @@ CREATE TABLE posts (
 -- Table users
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL UNIQUE,
+    usernameHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     post_id INT,
@@ -268,14 +295,18 @@ CREATE TABLE post_comments (
 CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
-    description TEXT
+    description TEXT,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME
 ) ENGINE=InnoDB;
 
 -- Table permissions
 CREATE TABLE permissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
-    description TEXT
+    description TEXT,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME
 ) ENGINE=InnoDB;
 
 -- Table user_roles (table pivot)

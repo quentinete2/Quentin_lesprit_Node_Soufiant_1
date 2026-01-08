@@ -6,6 +6,7 @@ module.exports = {
     await queryInterface.createTable('user_roles', {
       user_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         primaryKey: true,
         references: {
           model: 'users',
@@ -15,6 +16,7 @@ module.exports = {
       },
       role_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         primaryKey: true,
         references: {
           model: 'roles',
@@ -26,15 +28,6 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.NOW
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        allowNull: true
       }
     });
   },

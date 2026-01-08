@@ -4,7 +4,10 @@
     "password": "root",
     "database": "utilisateurs",
     "host": "serve_backend-db",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "migrationStoragePath": "./src/migrations",
+    "seederStorage": "sequelize",
+    "seederStoragePath": "./src/seeders"
   },
   "test": {
     "username": "root",

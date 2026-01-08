@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-// Importer les fonctions du contrôleur profils
+// Importer les middlewares
+const { validateAuthentication } = require('../midwave/auth');
+const { validateProfileCreate, validateProfileUpdate } = require('../midwave/validateProfile');
 const {
     getAllProfiles,
     getProfileById,
@@ -10,11 +12,11 @@ const {
     deleteProfile
 } = require('../service/profileController');
 
-// Routes CRUD pour les profils
-router.get('/', getAllProfiles);
-router.get('/:id', getProfileById);
-router.post('/', createProfile);
-router.put('/:id', updateProfile);
-router.delete('/:id', deleteProfile);
+// Routes des profils
+router.get('/', validateAuthentication, getAllProfiles);
+router.get('/:id', validateAuthentication, getProfileById);
+router.post('/', validateAuthentication, validateProfileCreate, createProfile);
+router.put('/:id', validateAuthentication, validateProfileUpdate, updateProfile);
+router.delete('/:id', validateAuthentication, deleteProfile);
 
 module.exports = router;

@@ -1,47 +1,41 @@
-const { DataTypes } = require('sequelize');
+const { Model } = require('sequelize');
 
-// Modèle Role représentant les rôles d'accès de l'application
-module.exports = (sequelize) => {
-    const Role = sequelize.define('Role', {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-        },
+const Role = (sequelize, DataTypes) => {
+    class Role extends Model {
+        static associate(models) {
+            this.belongsToMany(models.User, {
+                through: models.UserRole,
+                foreignKey: 'role_id',
+                otherKey: 'user_id',
+                as: 'users'
+            });
+
+            this.belongsToMany(models.Permission, {
+                through: models.RolePermission,
+                foreignKey: 'role_id',
+                otherKey: 'permission_id',
+                as: 'permissions'
+            });
+        }
+    }
+
+    Role.init({
         name: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true
         },
-        description: {
-            type: DataTypes.TEXT,
-            allowNull: true
-        }
+        description: DataTypes.STRING
     }, {
+        sequelize,
+        modelName: 'Role',
         tableName: 'roles',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'
     });
 
-    // Associations: un rôle peut avoir plusieurs utilisateurs et permissions
-    Role.associate = (models) => {
-        // Association many-to-many avec les utilisateurs
-        Role.belongsToMany(models.User, {
-            through: models.UserRole,
-            foreignKey: 'role_id',
-            otherKey: 'user_id',
-            as: 'users'
-        });
-
-        // Association many-to-many avec les permissions
-        Role.belongsToMany(models.Permission, {
-            through: models.RolePermission,
-            foreignKey: 'role_id',
-            otherKey: 'permission_id',
-            as: 'permissions'
-        });
-    };
-
     return Role;
 };
+
+module.exports = Role;

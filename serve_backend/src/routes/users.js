@@ -1,27 +1,16 @@
 const express = require('express');
+const { getAllUsers, getUserById, deleteUser } = require('../service/userController');
+const { validateAuthentication } = require('../midwave/auth');
+
 const router = express.Router();
 
-// Importer les fonctions du contrôleur utilisateur
-const {
-    getAllUsers,
-    getUserById,
-    createUser,
-    updateUser,
-    deleteUser,
-    getUserRoles,
-    assignRoleToUser,
-    removeRoleFromUser
-} = require('../service/userController');
+// GET all users
+router.get('/', validateAuthentication, getAllUsers);
 
-// Routes CRUD pour les utilisateurs
-router.get('/', getAllUsers);
-router.get('/:id', getUserById);
-router.post('/', createUser);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+// GET user by ID
+router.get('/:id', validateAuthentication, getUserById);
 
-// Routes pour gérer les rôles d'un utilisateur
-router.get('/:id/roles', getUserRoles);
-router.delete('/:userId/roles/:roleId', removeRoleFromUser);
+// DELETE user by ID
+router.delete('/:id', validateAuthentication, deleteUser);
 
 module.exports = router;

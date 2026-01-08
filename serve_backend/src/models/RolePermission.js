@@ -1,8 +1,12 @@
-const { DataTypes } = require('sequelize');
+const { Model } = require('sequelize');
 
-// Modèle RolePermission table d'association many-to-many entre rôles et permissions
-module.exports = (sequelize) => {
-    const RolePermission = sequelize.define('RolePermission', {
+const RolePermission = (sequelize, DataTypes) => {
+    class RolePermission extends Model {
+        static associate(models) {
+        }
+    }
+
+    RolePermission.init({
         role_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -20,12 +24,13 @@ module.exports = (sequelize) => {
             }
         }
     }, {
+        sequelize,
+        modelName: 'RolePermission',
         tableName: 'role_permissions',
         timestamps: false
     });
 
-    RolePermission.associate = (models) => {
-    };
-
     return RolePermission;
 };
+
+module.exports = RolePermission;

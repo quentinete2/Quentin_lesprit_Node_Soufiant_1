@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-// Importer les fonctions du contrôleur commentaires
+// Importer les middlewares
+const { validateAuthentication } = require('../midwave/auth');
+const { validateCommentCreate, validateCommentUpdate } = require('../midwave/validateComment');
 const {
     getAllComments,
     getCommentById,
@@ -10,11 +12,11 @@ const {
     deleteComment
 } = require('../service/commentController');
 
-// Routes CRUD pour les commentaires
-router.get('/', getAllComments);
-router.get('/:id', getCommentById);
-router.post('/', createComment);
-router.put('/:id', updateComment);
-router.delete('/:id', deleteComment);
+// Routes des commentaires
+router.get('/', validateAuthentication, getAllComments);
+router.get('/:id', validateAuthentication, getCommentById);
+router.post('/', validateAuthentication, validateCommentCreate, createComment);
+router.put('/:id', validateAuthentication, validateCommentUpdate, updateComment);
+router.delete('/:id', validateAuthentication, deleteComment);
 
 module.exports = router;

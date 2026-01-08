@@ -1,8 +1,8 @@
 const express = require('express');
 
 // Importer tous les routeurs spécialisés
-const utilisateurRoutes = require('./utilisateurs');
-const usersRoutes = require('./users');
+const authRoutes = require('./auth.js');
+const usersRoutes = require('./users.js');
 const profilesRoutes = require('./profiles');
 const postsRoutes = require('./posts');
 const commentsRoutes = require('./comments');
@@ -21,6 +21,7 @@ const initRoutes = (app) => {
     });
 
     // Montage des routes par domaine
+    app.use('/api/auth', authRoutes);
     app.use('/api/users', usersRoutes);
     app.use('/api/profiles', profilesRoutes);
     app.use('/api/posts', postsRoutes);
@@ -29,7 +30,6 @@ const initRoutes = (app) => {
     app.use('/api/permissions', permissionsRoutes);
     app.use('/api/user-roles', userRolesRoutes);
     app.use('/api/role-permissions', rolePermissionsRoutes);
-    app.use('/utilisateurs', utilisateurRoutes);
 }
 
 module.exports = initRoutes;

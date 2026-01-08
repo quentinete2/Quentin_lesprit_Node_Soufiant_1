@@ -6,6 +6,7 @@ module.exports = {
     await queryInterface.createTable('role_permissions', {
       role_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         primaryKey: true,
         references: {
           model: 'roles',
@@ -15,21 +16,13 @@ module.exports = {
       },
       permission_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         primaryKey: true,
         references: {
           model: 'permissions',
           key: 'id'
         },
         onDelete: 'CASCADE'
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.NOW
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        allowNull: true
       }
     });
   },

@@ -1,44 +1,28 @@
-const { DataTypes } = require('sequelize');
+const { Model } = require('sequelize');
 
-// Modèle Post représentant les articles/posts de l'application
-module.exports = (sequelize) => {
-    const Post = sequelize.define('Post', {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-        },
+const Product = (sequelize, DataTypes) => {
+    class Product extends Model {
+        static associate(models) {
+        }
+    }
+
+    Product.init({
         title: {
             type: DataTypes.STRING,
-            allowNull: false,
-            unique: true
+            allowNull: false
         },
-        description: {
-            type: DataTypes.TEXT,
-            allowNull: true
-        },
-        created_at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW
-        },
-        updated_at: {
-            type: DataTypes.DATE,
-            allowNull: true
-        }
+        description: DataTypes.TEXT
     }, {
-        tableName: 'posts',
-        timestamps: false
+        sequelize,
+        modelName: 'Product',
+        tableName: 'products',
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
     });
 
-    // Associations: un post peut avoir plusieurs commentaires
-    Post.associate = (models) => {
-        Post.hasMany(models.PostComment, {
-            foreignKey: 'post_id',
-            as: 'comments'
-        });
-    };
-
-    return Post;
+    return Product;
 };
+
+module.exports = Product;
 

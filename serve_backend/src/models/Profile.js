@@ -1,13 +1,22 @@
-const { DataTypes } = require('sequelize');
+const { Model } = require('sequelize');
 
-// Modèle Profile contenant les informations personnelles détaillées d'un utilisateur
-module.exports = (sequelize) => {
-    const Profile = sequelize.define('Profile', {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-        },
+const Profile = (sequelize, DataTypes) => {
+    class Profile extends Model {
+        static associate(models) {
+            this.belongsTo(models.User, {
+                foreignKey: 'user_id',
+                as: 'user'
+            });
+        }
+    }
+
+    Profile.init({
+        first_name: DataTypes.STRING,
+        last_name: DataTypes.STRING,
+        birthdate: DataTypes.DATEONLY,
+        phone: DataTypes.STRING,
+        address: DataTypes.STRING,
+        bio: DataTypes.TEXT,
         user_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -16,50 +25,17 @@ module.exports = (sequelize) => {
                 model: 'users',
                 key: 'id'
             }
-        },
-        first_name: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        last_name: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        birthdate: {
-            type: DataTypes.DATE,
-            allowNull: true
-        },
-        phone: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        address: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        created_at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW
-        },
-        updated_at: {
-            type: DataTypes.DATE,
-            allowNull: true
         }
     }, {
+        sequelize,
+        modelName: 'Profile',
         tableName: 'profiles',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'
     });
 
-    // Association: un profil appartient à un utilisateur
-    Profile.associate = (models) => {
-        Profile.belongsTo(models.User, {
-            foreignKey: 'user_id',
-            as: 'user'
-        });
-    };
-
     return Profile;
 };
+
+module.exports = Profile;

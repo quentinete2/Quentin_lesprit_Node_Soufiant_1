@@ -1,8 +1,12 @@
-const { DataTypes } = require('sequelize');
+const { Model } = require('sequelize');
 
-// Modèle UserRole table d'association many-to-many entre utilisateurs et rôles
-module.exports = (sequelize) => {
-    const UserRole = sequelize.define('UserRole', {
+const UserRole = (sequelize, DataTypes) => {
+    class UserRole extends Model {
+        static associate(models) {
+        }
+    }
+
+    UserRole.init({
         user_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -25,12 +29,13 @@ module.exports = (sequelize) => {
             defaultValue: DataTypes.NOW
         }
     }, {
+        sequelize,
+        modelName: 'UserRole',
         tableName: 'user_roles',
         timestamps: false
     });
 
-    UserRole.associate = (models) => {
-    };
-
     return UserRole;
 };
+
+module.exports = UserRole;
