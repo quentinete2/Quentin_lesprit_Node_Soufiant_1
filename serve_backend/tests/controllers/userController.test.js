@@ -2,8 +2,6 @@ const request = require('supertest');
 const app = require('../../src/app');
 
 describe("API Authentification - Utilisateurs",  () => {
-    // Tests sans connexion à la base de données réelle
-    // Ils testent les validations et les endpoints
     
     describe("POST /api/auth/register - Validations", () => {
         test("Devrait retourner une erreur 400 si le username est manquant", async () => {
@@ -139,8 +137,6 @@ describe("API Authentification - Utilisateurs",  () => {
 
     describe("POST /api/auth/register - Réponses HTTP", () => {
         test("Devrait accepter une request avec tous les champs valides", async () => {
-            // Ce test vérifie que la validation passe
-            // La création réelle dépend de la BD
             const result = await request(app)
                 .post("/api/auth/register")
                 .send({
@@ -148,9 +144,6 @@ describe("API Authentification - Utilisateurs",  () => {
                     username: `testuser_${Date.now()}`,
                     password: "SecurePassword123!"
                 });
-            
-            // Devrait soit créer (201) soit échouer en BD (500 si pas de connexion)
-            // mais ne pas échouer en validation
             expect([201, 500]).toContain(result.status);
         });
     });
@@ -163,9 +156,6 @@ describe("API Authentification - Utilisateurs",  () => {
                     username: "testuser",
                     password: "SecurePassword123!"
                 });
-            
-            // Devrait soit trouver l'utilisateur (200/401/404) soit échouer en BD (400)
-            // mais pas en validation
             expect([200, 400, 401, 404]).toContain(result.status);
         });
     });

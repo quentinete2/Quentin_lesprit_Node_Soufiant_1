@@ -4,19 +4,24 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Sequelize } = require('sequelize');
+const config = require('../../config/config.js');
 
 const db = {};
 const basename = path.basename(__filename);
 
+// Récupérer la configuration selon l'environnement
+const env = process.env.NODE_ENV || 'development';
+const dbConfig = config[env];
+
 // Initialiser la connexion Sequelize à MariaDB
 const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
+    dbConfig.database,
+    dbConfig.username,
+    dbConfig.password,
     {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        dialect: 'mariadb'
+        host: dbConfig.host,
+        port: dbConfig.port,
+        dialect: dbConfig.dialect
     }
 );
 

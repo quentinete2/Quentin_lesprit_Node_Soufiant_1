@@ -1,16 +1,44 @@
 {
 	"info": {
-		"_postman_id": "e3a0f2b6-631b-4006-bafe-b650e9af4d71",
-		"name": "Node Soufiant API",
+		"_postman_id": "410cc5bd-c5e0-406b-aee2-7c23d3929bdb",
+		"name": "Node Soufiant API_1.2",
 		"description": "Collection de tests pour l'API Node Soufiant",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "51249934",
-		"_collection_link": "https://quentinete2-2887144.postman.co/workspace/Tintin's-Workspace~5d094be4-d40a-4732-8a5e-ff86329dced9/collection/51249934-e3a0f2b6-631b-4006-bafe-b650e9af4d71?action=share&source=collection_link&creator=51249934"
+		"_collection_link": "https://quentinete2-2887144.postman.co/workspace/Tintin's-Workspace~5d094be4-d40a-4732-8a5e-ff86329dced9/collection/51249934-410cc5bd-c5e0-406b-aee2-7c23d3929bdb?action=share&source=collection_link&creator=51249934"
 	},
 	"item": [
 		{
 			"name": "Authentication",
 			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Register",
 					"request": {
@@ -288,7 +316,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"user_id\": 1,\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"birthdate\": \"1990-01-15\",\n  \"phone\": \"+33612345678\",\n  \"address\": \"123 Rue de la Paix, 75000 Paris\",\n  \"bio\": \"Passionate developer and content creator\"\n}"
+							"raw": "{\n  \"user_id\": 7,\n  \"first_name\": \"Johnatent\",\n  \"last_name\": \"Doeti\",\n  \"birthdate\": \"1990-01-15\",\n  \"phone\": \"+33612345679\",\n  \"address\": \"17 rue de jean-marck, 44000 Nantes\",\n  \"bio\": \"I am the president of United State\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/profiles",
@@ -592,6 +620,38 @@
 					"response": []
 				},
 				{
+					"name": "Create Comment fail",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{auth_token}}",
+								"type": "string"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"post_id\": 2,\n  \"user_id\": 1,\n  \"content\": \"t's a big security slaw\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/comments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get All Comments",
 					"request": {
 						"method": "GET",
@@ -721,6 +781,38 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"name\": \"admin\",\n  \"description\": \"Administrator role with full access\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/roles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Role 2",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{auth_token}}",
+								"type": "string"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"unemployed\",\n  \"description\": \"Administrator role with full access in the street\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/roles",

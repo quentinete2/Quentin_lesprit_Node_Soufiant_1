@@ -1,14 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-// Importer les middlewares
+// Importer les middlewares de validation et d'authentification
 const { validateAuthentication } = require('../midwave/auth');
+const { checkUserRole, checkRoleMiddleware, checkMultipleRolesMiddleware, checkPermissionMiddleware } = require('../midwave/role');
+// Importer les modèles
 const { UserRole, User, Role } = require('../models');
 const { sequelize } = require('../models');
 
-// Récupérer toutes les associations user-role
-router.get('/', validateAuthentication, async (req, res) => {
+// Récupérer toutes les associations user-role - Requiert le rôle admin et la permission manage_roles
+router.get('/', validateAuthentication, checkMultipleRolesMiddleware('admin'), checkPermissionMiddleware('manage_roles'), async (req, res) => {
     try {
+        // Récupérer toutes les associations user-role avec les données associées
         const userRoles = await UserRole.findAll({
             include: [
                 { model: User, attributes: ['id', 'username', 'email'] },
@@ -27,9 +30,10 @@ router.get('/', validateAuthentication, async (req, res) => {
     }
 });
 
-// Récupérer les rôles d'un utilisateur spécifique
-router.get('/user/:userId', validateAuthentication, async (req, res) => {
+// Récupérer les rôles d'un utilisateur spécifique - Requiert le rôle admin et la permission manage_roles
+router.get('/user/:userId', validateAuthentication, checkMultipleRolesMiddleware('admin'), checkPermissionMiddleware('manage_roles'), async (req, res) => {
     try {
+        // Chercher tous les rôles assignés à un utilisateur spécifique
         const userRoles = await UserRole.findAll({
             where: { user_id: req.params.userId },
             include: [{ model: Role, attributes: ['id', 'name', 'description'] }]
@@ -51,10 +55,12 @@ router.get('/user/:userId', validateAuthentication, async (req, res) => {
     }
 });
 
-// Assigner un rôle à un utilisateur
-router.post('/', validateAuthentication, async (req, res) => {
+// Assigner un rôle à un utilisateur - Requiert le rôle admin et la permission manage_roles
+router.post('/', validateAuthentication, checkMultipleRolesMiddleware('admin'), checkPermissionMiddleware('manage_roles'), async (req, res) => {
+    // Démarrer une transaction
     const transaction = await sequelize.transaction();
     try {
+        // Extraire les IDs de l'utilisateur et du rôle
         const { user_id, role_id } = req.body;
 
         // Validation
@@ -91,17 +97,20 @@ router.post('/', validateAuthentication, async (req, res) => {
             });
         }
 
+        // Créer la nouvelle association
         const userRole = await UserRole.create({
             user_id,
             role_id
         }, { transaction });
 
+        // Confirmer la transaction
         await transaction.commit();
         res.status(201).json({
             message: "Rôle assigné avec succès",
             data: userRole
         });
     } catch (error) {
+        // Annuler la transaction en cas d'erreur
         await transaction.rollback();
         res.status(400).json({
             message: "Erreur lors de l'assignation du rôle",
@@ -110,12 +119,15 @@ router.post('/', validateAuthentication, async (req, res) => {
     }
 });
 
-// Retirer un rôle d'un utilisateur
-router.delete('/:userId/:roleId', validateAuthentication, async (req, res) => {
+// Retirer un rôle d'un utilisateur - Requiert le rôle admin et la permission manage_roles
+router.delete('/:userId/:roleId', validateAuthentication, checkMultipleRolesMiddleware('admin'), checkPermissionMiddleware('manage_roles'), async (req, res) => {
+    // Démarrer une transaction
     const transaction = await sequelize.transaction();
     try {
+        // Extraire les IDs de l'utilisateur et du rôle
         const { userId, roleId } = req.params;
 
+        // Chercher l'association user-role
         const userRole = await UserRole.findOne({
             where: { user_id: userId, role_id: roleId },
             transaction
@@ -128,13 +140,16 @@ router.delete('/:userId/:roleId', validateAuthentication, async (req, res) => {
             });
         }
 
+        // Supprimer l'association
         await userRole.destroy({ transaction });
+        // Confirmer la transaction
         await transaction.commit();
 
         res.status(200).json({
             message: "Rôle retiré avec succès"
         });
     } catch (error) {
+        // Annuler la transaction en cas d'erreur
         await transaction.rollback();
         res.status(400).json({
             message: "Erreur lors du retrait du rôle",

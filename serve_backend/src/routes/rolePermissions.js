@@ -1,14 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-// Importer les middlewares
+// Importer les middlewares de validation et d'authentification
 const { validateAuthentication } = require('../midwave/auth');
+const { checkUserRole, checkRoleMiddleware } = require('../midwave/role');
+// Importer les modèles
 const { RolePermission, Role, Permission } = require('../models');
 const { sequelize } = require('../models');
 
-// Récupérer toutes les associations role-permission
+// Récupérer toutes les associations role-permission - Requiert l'authentification
 router.get('/', validateAuthentication, async (req, res) => {
     try {
+        // Récupérer toutes les associations role-permission avec les données associées
         const rolePermissions = await RolePermission.findAll({
             include: [
                 { model: Role, attributes: ['id', 'name', 'description'] },
@@ -27,9 +30,10 @@ router.get('/', validateAuthentication, async (req, res) => {
     }
 });
 
-// Récupérer les permissions d'un rôle spécifique
+// Récupérer les permissions d'un rôle spécifique - Requiert l'authentification
 router.get('/role/:roleId', validateAuthentication, async (req, res) => {
     try {
+        // Chercher toutes les permissions assignées à un rôle spécifique
         const rolePermissions = await RolePermission.findAll({
             where: { role_id: req.params.roleId },
             include: [{ model: Permission, attributes: ['id', 'name', 'description'] }]
@@ -51,10 +55,12 @@ router.get('/role/:roleId', validateAuthentication, async (req, res) => {
     }
 });
 
-// Assigner une permission à un rôle
+// Assigner une permission à un rôle - Requiert l'authentification
 router.post('/', validateAuthentication, async (req, res) => {
+    // Démarrer une transaction
     const transaction = await sequelize.transaction();
     try {
+        // Extraire les IDs du rôle et de la permission
         const { role_id, permission_id } = req.body;
 
         // Validation
@@ -91,17 +97,20 @@ router.post('/', validateAuthentication, async (req, res) => {
             });
         }
 
+        // Créer la nouvelle association
         const rolePermission = await RolePermission.create({
             role_id,
             permission_id
         }, { transaction });
 
+        // Confirmer la transaction
         await transaction.commit();
         res.status(201).json({
             message: "Permission assignée avec succès",
             data: rolePermission
         });
     } catch (error) {
+        // Annuler la transaction en cas d'erreur
         await transaction.rollback();
         res.status(400).json({
             message: "Erreur lors de l'assignation de la permission",
@@ -110,12 +119,15 @@ router.post('/', validateAuthentication, async (req, res) => {
     }
 });
 
-// Retirer une permission d'un rôle
+// Retirer une permission d'un rôle - Requiert l'authentification
 router.delete('/:roleId/:permissionId', validateAuthentication, async (req, res) => {
+    // Démarrer une transaction
     const transaction = await sequelize.transaction();
     try {
+        // Extraire les IDs du rôle et de la permission
         const { roleId, permissionId } = req.params;
 
+        // Chercher l'association role-permission
         const rolePermission = await RolePermission.findOne({
             where: { role_id: roleId, permission_id: permissionId },
             transaction
@@ -128,13 +140,16 @@ router.delete('/:roleId/:permissionId', validateAuthentication, async (req, res)
             });
         }
 
+        // Supprimer l'association
         await rolePermission.destroy({ transaction });
+        // Confirmer la transaction
         await transaction.commit();
 
         res.status(200).json({
             message: "Permission retirée avec succès"
         });
     } catch (error) {
+        // Annuler la transaction en cas d'erreur
         await transaction.rollback();
         res.status(400).json({
             message: "Erreur lors du retrait de la permission",
